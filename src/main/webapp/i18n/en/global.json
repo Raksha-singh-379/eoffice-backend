@@ -7,6 +7,19 @@
       "jhipster-needle-menu-add-element": "JHipster will add additional menu entries here (do not translate!)",
       "entities": {
         "main": "Entities",
+        "securityUser": "Security User",
+        "userAccess": "User Access",
+        "securityRole": "Security Role",
+        "securityPermission": "Security Permission",
+        "organization": "Organization",
+        "dakMaster": "Dak Master",
+        "dakIdGenerator": "Dak Id Generator",
+        "parameterLookup": "Parameter Lookup",
+        "commentMaster": "Comment Master",
+        "hearingDetails": "Hearing Details",
+        "dakHistory": "Dak History",
+        "dakJourney": "Dak Journey",
+        "ghoshwara": "Ghoshwara",
         "jhipster-needle-menu-add-entry": "JHipster will add additional entities here (do not translate!)"
       },
       "account": {

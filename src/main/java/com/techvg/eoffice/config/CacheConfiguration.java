@@ -48,6 +48,27 @@ public class CacheConfiguration {
             createCache(cm, com.techvg.eoffice.domain.User.class.getName());
             createCache(cm, com.techvg.eoffice.domain.Authority.class.getName());
             createCache(cm, com.techvg.eoffice.domain.User.class.getName() + ".authorities");
+            createCache(cm, com.techvg.eoffice.domain.SecurityUser.class.getName());
+            createCache(cm, com.techvg.eoffice.domain.SecurityUser.class.getName() + ".securityPermissions");
+            createCache(cm, com.techvg.eoffice.domain.SecurityUser.class.getName() + ".securityRoles");
+            createCache(cm, com.techvg.eoffice.domain.SecurityUser.class.getName() + ".dakMasters");
+            createCache(cm, com.techvg.eoffice.domain.UserAccess.class.getName());
+            createCache(cm, com.techvg.eoffice.domain.SecurityRole.class.getName());
+            createCache(cm, com.techvg.eoffice.domain.SecurityRole.class.getName() + ".securityPermissions");
+            createCache(cm, com.techvg.eoffice.domain.SecurityRole.class.getName() + ".securityUsers");
+            createCache(cm, com.techvg.eoffice.domain.SecurityPermission.class.getName());
+            createCache(cm, com.techvg.eoffice.domain.SecurityPermission.class.getName() + ".securityRoles");
+            createCache(cm, com.techvg.eoffice.domain.SecurityPermission.class.getName() + ".securityUsers");
+            createCache(cm, com.techvg.eoffice.domain.Organization.class.getName());
+            createCache(cm, com.techvg.eoffice.domain.DakMaster.class.getName());
+            createCache(cm, com.techvg.eoffice.domain.DakMaster.class.getName() + ".securityUsers");
+            createCache(cm, com.techvg.eoffice.domain.DakIdGenerator.class.getName());
+            createCache(cm, com.techvg.eoffice.domain.ParameterLookup.class.getName());
+            createCache(cm, com.techvg.eoffice.domain.CommentMaster.class.getName());
+            createCache(cm, com.techvg.eoffice.domain.HearingDetails.class.getName());
+            createCache(cm, com.techvg.eoffice.domain.DakHistory.class.getName());
+            createCache(cm, com.techvg.eoffice.domain.DakJourney.class.getName());
+            createCache(cm, com.techvg.eoffice.domain.Ghoshwara.class.getName());
             // jhipster-needle-ehcache-add-entry
         };
     }

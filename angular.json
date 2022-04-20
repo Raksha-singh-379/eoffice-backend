@@ -100,6 +100,7 @@
   },
   "defaultProject": "eoffice",
   "cli": {
+    "analytics": "15205b40-35cb-4a56-9215-5c8bea01d4f2",
     "cache": {
       "enabled": true,
       "path": "./target/angular/",
