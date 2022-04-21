@@ -2,15 +2,22 @@ package com.techvg.eoffice.service;
 
 import com.techvg.eoffice.domain.SecurityUser;
 import com.techvg.eoffice.repository.SecurityUserRepository;
+import com.techvg.eoffice.security.SecurityUtils;
+import com.techvg.eoffice.service.dto.LoginUserDTO;
 import com.techvg.eoffice.service.dto.SecurityUserDTO;
+import com.techvg.eoffice.service.mapper.LoginUserMapper;
 import com.techvg.eoffice.service.mapper.SecurityUserMapper;
+import java.time.Instant;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tech.jhipster.security.RandomUtil;
 
 /**
  * Service Implementation for managing {@link SecurityUser}.
@@ -25,9 +32,20 @@ public class SecurityUserService {
 
     private final SecurityUserMapper securityUserMapper;
 
-    public SecurityUserService(SecurityUserRepository securityUserRepository, SecurityUserMapper securityUserMapper) {
+    private final LoginUserMapper loginUserMapper;
+
+    private final PasswordEncoder passwordEncoder;
+
+    public SecurityUserService(
+        SecurityUserRepository securityUserRepository,
+        SecurityUserMapper securityUserMapper,
+        LoginUserMapper loginUserMapper,
+        PasswordEncoder passwordEncoder
+    ) {
         this.securityUserRepository = securityUserRepository;
         this.securityUserMapper = securityUserMapper;
+        this.loginUserMapper = loginUserMapper;
+        this.passwordEncoder = passwordEncoder;
     }
 
     /**
@@ -39,19 +57,10 @@ public class SecurityUserService {
     public SecurityUserDTO save(SecurityUserDTO securityUserDTO) {
         log.debug("Request to save SecurityUser : {}", securityUserDTO);
         SecurityUser securityUser = securityUserMapper.toEntity(securityUserDTO);
-        securityUser = securityUserRepository.save(securityUser);
-        return securityUserMapper.toDto(securityUser);
-    }
-
-    /**
-     * Update a securityUser.
-     *
-     * @param securityUserDTO the entity to save.
-     * @return the persisted entity.
-     */
-    public SecurityUserDTO update(SecurityUserDTO securityUserDTO) {
-        log.debug("Request to save SecurityUser : {}", securityUserDTO);
-        SecurityUser securityUser = securityUserMapper.toEntity(securityUserDTO);
+        if (securityUser.getPasswordHash().length() < 12) {
+            String encryptedPassword = passwordEncoder.encode(securityUser.getPasswordHash());
+            securityUser.setPasswordHash(encryptedPassword);
+        }
         securityUser = securityUserRepository.save(securityUser);
         return securityUserMapper.toDto(securityUser);
     }
@@ -117,5 +126,77 @@ public class SecurityUserService {
     public void delete(Long id) {
         log.debug("Request to delete SecurityUser : {}", id);
         securityUserRepository.deleteById(id);
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<SecurityUser> getUserWithAuthoritiesByUsername(String login) {
+        return securityUserRepository.findOneWithSecurityRolesByUsername(login);
+    }
+
+    @Transactional(readOnly = true)
+    public LoginUserDTO getUserWithAuthorities() {
+        Optional<SecurityUser> securityUserOpt = securityUserRepository.findOneWithSecurityRolesByUsername(
+            SecurityContextHolder.getContext().getAuthentication().getName()
+        );
+        if (!securityUserOpt.isPresent()) {
+            securityUserOpt =
+                securityUserRepository.findOneWithSecurityPermissionsByUsername(
+                    SecurityContextHolder.getContext().getAuthentication().getName()
+                );
+        }
+        return securityUserOpt.map(loginUserMapper::toDto).orElse(null);
+    }
+
+    public Optional<SecurityUser> activateRegistration(String key) {
+        log.debug("Activating user for activation key {}", key);
+        return securityUserRepository
+            .findOneByActivationKey(key)
+            .map(user -> {
+                // activate given user for the registration key.
+                user.setActivated(true);
+                user.setActivationKey(null);
+                log.debug("Activated user: {}", user);
+                return user;
+            });
+    }
+
+    public Optional<SecurityUser> completePasswordReset(String newPassword, String key) {
+        log.debug("Reset user password for reset key {}", key);
+        return securityUserRepository
+            .findOneByResetKey(key)
+            .filter(user -> user.getResetDate().isAfter(Instant.now().minusSeconds(86400)))
+            .map(user -> {
+                user.setPasswordHash(passwordEncoder.encode(newPassword));
+                user.setResetKey(null);
+                user.setResetDate(null);
+                return user;
+            });
+    }
+
+    public Optional<SecurityUser> requestPasswordReset(String mail) {
+        return securityUserRepository
+            .findOneByEmailIgnoreCase(mail)
+            .filter(SecurityUser::isActivated)
+            .map(user -> {
+                user.setResetKey(RandomUtil.generateResetKey());
+                user.setResetDate(Instant.now());
+                return user;
+            });
+    }
+
+    @Transactional
+    public void changePassword(String currentClearTextPassword, String newPassword) {
+        SecurityUtils
+            .getCurrentUserLogin()
+            .flatMap(securityUserRepository::findOneByUsername)
+            .ifPresent(user -> {
+                String currentEncryptedPassword = user.getPasswordHash();
+                if (!passwordEncoder.matches(currentClearTextPassword, currentEncryptedPassword)) {
+                    throw new InvalidPasswordException();
+                }
+                String encryptedPassword = passwordEncoder.encode(newPassword);
+                user.setPasswordHash(encryptedPassword);
+                log.debug("Changed password for User: {}", user);
+            });
     }
 }

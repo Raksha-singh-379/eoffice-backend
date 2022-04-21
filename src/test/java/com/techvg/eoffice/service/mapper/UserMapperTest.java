@@ -3,7 +3,7 @@ package com.techvg.eoffice.service.mapper;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.techvg.eoffice.domain.User;
-import com.techvg.eoffice.service.dto.AdminUserDTO;
+import com.techvg.eoffice.service.dto.LoginUserDTO;
 import com.techvg.eoffice.service.dto.UserDTO;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -23,7 +23,7 @@ class UserMapperTest {
 
     private UserMapper userMapper;
     private User user;
-    private AdminUserDTO userDto;
+    private UserDTO userDto;
 
     @BeforeEach
     public void init() {
@@ -38,7 +38,7 @@ class UserMapperTest {
         user.setImageUrl("image_url");
         user.setLangKey("en");
 
-        userDto = new AdminUserDTO(user);
+        userDto = new UserDTO(user);
     }
 
     @Test
@@ -54,7 +54,7 @@ class UserMapperTest {
 
     @Test
     void userDTOsToUsersShouldMapOnlyNonNullUsers() {
-        List<AdminUserDTO> usersDto = new ArrayList<>();
+        List<UserDTO> usersDto = new ArrayList<>();
         usersDto.add(userDto);
         usersDto.add(null);
 
@@ -69,7 +69,7 @@ class UserMapperTest {
         authoritiesAsString.add("ADMIN");
         userDto.setAuthorities(authoritiesAsString);
 
-        List<AdminUserDTO> usersDto = new ArrayList<>();
+        List<UserDTO> usersDto = new ArrayList<>();
         usersDto.add(userDto);
 
         List<User> users = userMapper.userDTOsToUsers(usersDto);
@@ -84,7 +84,7 @@ class UserMapperTest {
     void userDTOsToUsersMapWithNullAuthoritiesStringShouldReturnUserWithEmptyAuthorities() {
         userDto.setAuthorities(null);
 
-        List<AdminUserDTO> usersDto = new ArrayList<>();
+        List<UserDTO> usersDto = new ArrayList<>();
         usersDto.add(userDto);
 
         List<User> users = userMapper.userDTOsToUsers(usersDto);

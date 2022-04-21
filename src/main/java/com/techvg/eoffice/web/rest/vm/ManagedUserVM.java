@@ -1,12 +1,12 @@
 package com.techvg.eoffice.web.rest.vm;
 
-import com.techvg.eoffice.service.dto.AdminUserDTO;
+import com.techvg.eoffice.service.dto.LoginUserDTO;
 import javax.validation.constraints.Size;
 
 /**
  * View Model extending the AdminUserDTO, which is meant to be used in the user management UI.
  */
-public class ManagedUserVM extends AdminUserDTO {
+public class ManagedUserVM extends LoginUserDTO {
 
     public static final int PASSWORD_MIN_LENGTH = 4;
 

@@ -50,6 +50,10 @@ public class SecurityUserDTO implements Serializable {
 
     private Instant createdOn;
 
+    private String lastModified;
+
+    private String lastModifiedBy;
+
     private OrganizationDTO organization;
 
     private Set<SecurityPermissionDTO> securityPermissions = new HashSet<>();
@@ -200,6 +204,22 @@ public class SecurityUserDTO implements Serializable {
         this.createdOn = createdOn;
     }
 
+    public String getLastModified() {
+        return lastModified;
+    }
+
+    public void setLastModified(String lastModified) {
+        this.lastModified = lastModified;
+    }
+
+    public String getLastModifiedBy() {
+        return lastModifiedBy;
+    }
+
+    public void setLastModifiedBy(String lastModifiedBy) {
+        this.lastModifiedBy = lastModifiedBy;
+    }
+
     public OrganizationDTO getOrganization() {
         return organization;
     }
@@ -267,6 +287,8 @@ public class SecurityUserDTO implements Serializable {
             ", mobileNo='" + getMobileNo() + "'" +
             ", createdBy='" + getCreatedBy() + "'" +
             ", createdOn='" + getCreatedOn() + "'" +
+            ", lastModified='" + getLastModified() + "'" +
+            ", lastModifiedBy='" + getLastModifiedBy() + "'" +
             ", organization=" + getOrganization() +
             ", securityPermissions=" + getSecurityPermissions() +
             ", securityRoles=" + getSecurityRoles() +

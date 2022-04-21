@@ -1,7 +1,12 @@
 package com.techvg.eoffice.security;
 
+import com.techvg.eoffice.domain.SecurityUser;
 import com.techvg.eoffice.domain.User;
+import com.techvg.eoffice.repository.SecurityUserRepository;
 import com.techvg.eoffice.repository.UserRepository;
+import com.techvg.eoffice.service.dto.LoginUserDTO;
+import com.techvg.eoffice.service.mapper.LoginUserMapper;
+import com.techvg.eoffice.web.rest.errors.NotFoundException;
 import java.util.*;
 import java.util.stream.Collectors;
 import org.hibernate.validator.internal.constraintvalidators.hv.EmailValidator;
@@ -23,10 +28,13 @@ public class DomainUserDetailsService implements UserDetailsService {
 
     private final Logger log = LoggerFactory.getLogger(DomainUserDetailsService.class);
 
-    private final UserRepository userRepository;
+    private final SecurityUserRepository userRepository;
 
-    public DomainUserDetailsService(UserRepository userRepository) {
+    private final LoginUserMapper loginUserMapper;
+
+    public DomainUserDetailsService(SecurityUserRepository userRepository, LoginUserMapper loginUserMapper) {
         this.userRepository = userRepository;
+        this.loginUserMapper = loginUserMapper;
     }
 
     @Override
@@ -34,29 +42,38 @@ public class DomainUserDetailsService implements UserDetailsService {
     public UserDetails loadUserByUsername(final String login) {
         log.debug("Authenticating {}", login);
 
-        if (new EmailValidator().isValid(login, null)) {
-            return userRepository
-                .findOneWithAuthoritiesByEmailIgnoreCase(login)
-                .map(user -> createSpringSecurityUser(login, user))
-                .orElseThrow(() -> new UsernameNotFoundException("User with email " + login + " was not found in the database"));
-        }
+        /*
+         * if (new EmailValidator().isValid(login, null)) { return userRepository
+         * .findOneWithAuthoritiesByEmailIgnoreCase(login) .map(user ->
+         * createSpringSecurityUser(login, user)) .orElseThrow(() -> new
+         * UsernameNotFoundException("User with email " + login +
+         * " was not found in the database")); }
+         */
 
         String lowercaseLogin = login.toLowerCase(Locale.ENGLISH);
+
+        log.debug("fetch data from security user table {}", lowercaseLogin);
         return userRepository
-            .findOneWithAuthoritiesByLogin(lowercaseLogin)
+            .findOneByUsername(lowercaseLogin)
             .map(user -> createSpringSecurityUser(lowercaseLogin, user))
             .orElseThrow(() -> new UsernameNotFoundException("User " + lowercaseLogin + " was not found in the database"));
     }
 
-    private org.springframework.security.core.userdetails.User createSpringSecurityUser(String lowercaseLogin, User user) {
-        if (!user.isActivated()) {
+    private org.springframework.security.core.userdetails.User createSpringSecurityUser(String lowercaseLogin, SecurityUser user) {
+        if (user.isActivated()) {
             throw new UserNotActivatedException("User " + lowercaseLogin + " was not activated");
         }
-        List<GrantedAuthority> grantedAuthorities = user
+        LoginUserDTO dto = loginUserMapper.toDto(user);
+        List<GrantedAuthority> grantedAuthorities = dto
             .getAuthorities()
             .stream()
-            .map(authority -> new SimpleGrantedAuthority(authority.getName()))
+            .map(permision -> new SimpleGrantedAuthority(permision))
             .collect(Collectors.toList());
-        return new org.springframework.security.core.userdetails.User(user.getLogin(), user.getPassword(), grantedAuthorities);
+
+        if (grantedAuthorities.isEmpty()) {
+            throw new NotFoundException("User " + lowercaseLogin + " has no Role or Permissions");
+        }
+
+        return new org.springframework.security.core.userdetails.User(user.getUsername(), user.getPasswordHash(), grantedAuthorities);
     }
 }

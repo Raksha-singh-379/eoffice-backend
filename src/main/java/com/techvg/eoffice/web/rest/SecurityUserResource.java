@@ -20,6 +20,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import tech.jhipster.web.util.HeaderUtil;
@@ -64,6 +65,7 @@ public class SecurityUserResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("/security-users")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN','USERS_EDIT')")
     public ResponseEntity<SecurityUserDTO> createSecurityUser(@Valid @RequestBody SecurityUserDTO securityUserDTO)
         throws URISyntaxException {
         log.debug("REST request to save SecurityUser : {}", securityUserDTO);
@@ -88,6 +90,7 @@ public class SecurityUserResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PutMapping("/security-users/{id}")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN','USERS_EDIT')")
     public ResponseEntity<SecurityUserDTO> updateSecurityUser(
         @PathVariable(value = "id", required = false) final Long id,
         @Valid @RequestBody SecurityUserDTO securityUserDTO
@@ -104,7 +107,7 @@ public class SecurityUserResource {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
-        SecurityUserDTO result = securityUserService.update(securityUserDTO);
+        SecurityUserDTO result = securityUserService.save(securityUserDTO);
         return ResponseEntity
             .ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, securityUserDTO.getId().toString()))
@@ -155,6 +158,7 @@ public class SecurityUserResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of securityUsers in body.
      */
     @GetMapping("/security-users")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN','USERS_EDIT','USERS_LIST')")
     public ResponseEntity<List<SecurityUserDTO>> getAllSecurityUsers(
         SecurityUserCriteria criteria,
         @org.springdoc.api.annotations.ParameterObject Pageable pageable
@@ -184,6 +188,7 @@ public class SecurityUserResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the securityUserDTO, or with status {@code 404 (Not Found)}.
      */
     @GetMapping("/security-users/{id}")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN','USERS_EDIT','USERS_LIST')")
     public ResponseEntity<SecurityUserDTO> getSecurityUser(@PathVariable Long id) {
         log.debug("REST request to get SecurityUser : {}", id);
         Optional<SecurityUserDTO> securityUserDTO = securityUserService.findOne(id);
@@ -197,6 +202,7 @@ public class SecurityUserResource {
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
      */
     @DeleteMapping("/security-users/{id}")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN','USERS_EDIT')")
     public ResponseEntity<Void> deleteSecurityUser(@PathVariable Long id) {
         log.debug("REST request to delete SecurityUser : {}", id);
         securityUserService.delete(id);

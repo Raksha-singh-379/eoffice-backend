@@ -2,7 +2,7 @@ package com.techvg.eoffice.service.mapper;
 
 import com.techvg.eoffice.domain.Authority;
 import com.techvg.eoffice.domain.User;
-import com.techvg.eoffice.service.dto.AdminUserDTO;
+import com.techvg.eoffice.service.dto.LoginUserDTO;
 import com.techvg.eoffice.service.dto.UserDTO;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -28,19 +28,19 @@ public class UserMapper {
         return new UserDTO(user);
     }
 
-    public List<AdminUserDTO> usersToAdminUserDTOs(List<User> users) {
+    public List<UserDTO> usersToAdminUserDTOs(List<User> users) {
         return users.stream().filter(Objects::nonNull).map(this::userToAdminUserDTO).collect(Collectors.toList());
     }
 
-    public AdminUserDTO userToAdminUserDTO(User user) {
-        return new AdminUserDTO(user);
+    public UserDTO userToAdminUserDTO(User user) {
+        return new UserDTO(user);
     }
 
-    public List<User> userDTOsToUsers(List<AdminUserDTO> userDTOs) {
+    public List<User> userDTOsToUsers(List<UserDTO> userDTOs) {
         return userDTOs.stream().filter(Objects::nonNull).map(this::userDTOToUser).collect(Collectors.toList());
     }
 
-    public User userDTOToUser(AdminUserDTO userDTO) {
+    public User userDTOToUser(UserDTO userDTO) {
         if (userDTO == null) {
             return null;
         } else {

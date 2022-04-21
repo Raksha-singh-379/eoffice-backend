@@ -18,6 +18,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 import tech.jhipster.config.JHipsterProperties;
 
 @Component
@@ -38,6 +39,8 @@ public class TokenProvider {
     private final long tokenValidityInMillisecondsForRememberMe;
 
     private final SecurityMetersService securityMetersService;
+
+    public HashMap<String, String> myHash = new HashMap<String, String>();
 
     public TokenProvider(JHipsterProperties jHipsterProperties, SecurityMetersService securityMetersService) {
         byte[] keyBytes;
@@ -96,31 +99,67 @@ public class TokenProvider {
         return new UsernamePasswordAuthenticationToken(principal, token, authorities);
     }
 
+    public User getUser(String token) {
+        Claims claims = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
+
+        Collection<? extends GrantedAuthority> authorities = Arrays
+            .stream(claims.get(AUTHORITIES_KEY).toString().split(","))
+            .map(SimpleGrantedAuthority::new)
+            .collect(Collectors.toList());
+
+        User principal = new User(claims.getSubject(), "", authorities);
+
+        return principal;
+    }
+
+    /*
+     * public boolean validateToken(String authToken) { User user =
+     * getUser(authToken); try { if (!StringUtils.isEmpty(user.getUsername())) { if
+     * (myHash.get(user.getUsername()) == null) { return false; } } else { return
+     * false; } jwtParser.parseClaimsJws(authToken);
+     *
+     * return true; } catch (ExpiredJwtException e) {
+     * this.securityMetersService.trackTokenExpired();
+     *
+     * log.trace(INVALID_JWT_TOKEN, e); } catch (UnsupportedJwtException e) {
+     * this.securityMetersService.trackTokenUnsupported();
+     *
+     * log.trace(INVALID_JWT_TOKEN, e); } catch (MalformedJwtException e) {
+     * this.securityMetersService.trackTokenMalformed();
+     *
+     * log.trace(INVALID_JWT_TOKEN, e); } catch (SignatureException e) {
+     * this.securityMetersService.trackTokenInvalidSignature();
+     *
+     * log.trace(INVALID_JWT_TOKEN, e); } catch (IllegalArgumentException e) { //
+     * TODO: should we let it bubble (no catch), to avoid defensive programming and
+     * follow the fail-fast principle? log.error("Token validation error {}",
+     * e.getMessage()); }
+     *
+     * return false; }
+     */
+
     public boolean validateToken(String authToken) {
         try {
-            jwtParser.parseClaimsJws(authToken);
+            User user = getUser(authToken);
 
+            if (!StringUtils.isEmpty(user.getUsername())) {
+                try {
+                    if (myHash.get(user.getUsername()) == null) {
+                        return false;
+                    }
+                } catch (Exception ex) {
+                    return false;
+                }
+            } else {
+                return false;
+            }
+
+            Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(authToken);
             return true;
-        } catch (ExpiredJwtException e) {
-            this.securityMetersService.trackTokenExpired();
-
-            log.trace(INVALID_JWT_TOKEN, e);
-        } catch (UnsupportedJwtException e) {
-            this.securityMetersService.trackTokenUnsupported();
-
-            log.trace(INVALID_JWT_TOKEN, e);
-        } catch (MalformedJwtException e) {
-            this.securityMetersService.trackTokenMalformed();
-
-            log.trace(INVALID_JWT_TOKEN, e);
-        } catch (SignatureException e) {
-            this.securityMetersService.trackTokenInvalidSignature();
-
-            log.trace(INVALID_JWT_TOKEN, e);
-        } catch (IllegalArgumentException e) { // TODO: should we let it bubble (no catch), to avoid defensive programming and follow the fail-fast principle?
-            log.error("Token validation error {}", e.getMessage());
+        } catch (JwtException | IllegalArgumentException e) {
+            log.info("Invalid JWT token.");
+            log.trace("Invalid JWT token trace.", e);
         }
-
         return false;
     }
 }

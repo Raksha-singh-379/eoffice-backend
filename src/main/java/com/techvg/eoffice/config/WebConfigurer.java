@@ -3,6 +3,7 @@ package com.techvg.eoffice.config;
 import static java.net.URLDecoder.decode;
 
 import java.io.File;
+import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import javax.servlet.*;
@@ -54,10 +55,15 @@ public class WebConfigurer implements ServletContextInitializer, WebServerFactor
     @Override
     public void customize(WebServerFactory server) {
         // When running in an IDE or with ./mvnw spring-boot:run, set location of the static web assets.
-        setLocationForStaticAssets(server);
+        try {
+            setLocationForStaticAssets(server);
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
 
-    private void setLocationForStaticAssets(WebServerFactory server) {
+    private void setLocationForStaticAssets(WebServerFactory server) throws Exception {
         if (server instanceof ConfigurableServletWebServerFactory) {
             ConfigurableServletWebServerFactory servletWebServer = (ConfigurableServletWebServerFactory) server;
             File root;
@@ -71,9 +77,10 @@ public class WebConfigurer implements ServletContextInitializer, WebServerFactor
 
     /**
      * Resolve path prefix to static resources.
+     * @throws Exception
      */
-    private String resolvePathPrefix() {
-        String fullExecutablePath = decode(this.getClass().getResource("").getPath(), StandardCharsets.UTF_8);
+    private String resolvePathPrefix() throws Exception {
+        String fullExecutablePath = decode(this.getClass().getResource("").getPath().toString(), "UTF_8");
         String rootPath = Paths.get(".").toUri().normalize().getPath();
         String extractedPath = fullExecutablePath.replace(rootPath, "");
         int extractionEndIndex = extractedPath.indexOf("target/");

@@ -3,7 +3,9 @@ package com.techvg.eoffice.domain;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.io.Serializable;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import javax.persistence.*;
 import javax.validation.constraints.*;
@@ -78,6 +80,12 @@ public class SecurityUser implements Serializable {
     @Column(name = "created_on")
     private Instant createdOn;
 
+    @Column(name = "last_modified")
+    private String lastModified;
+
+    @Column(name = "last_modified_by")
+    private String lastModifiedBy;
+
     @ManyToOne
     private Organization organization;
 
@@ -105,6 +113,9 @@ public class SecurityUser implements Serializable {
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     @JsonIgnoreProperties(value = { "organization", "securityUsers" }, allowSetters = true)
     private Set<DakMaster> dakMasters = new HashSet<>();
+
+    @OneToMany(mappedBy = "securityUser", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<UserAccess> userAccess = new ArrayList<UserAccess>();
 
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
@@ -238,7 +249,7 @@ public class SecurityUser implements Serializable {
         this.imageUrl = imageUrl;
     }
 
-    public Boolean getActivated() {
+    public Boolean isActivated() {
         return this.activated;
     }
 
@@ -340,6 +351,32 @@ public class SecurityUser implements Serializable {
 
     public void setCreatedOn(Instant createdOn) {
         this.createdOn = createdOn;
+    }
+
+    public String getLastModified() {
+        return this.lastModified;
+    }
+
+    public SecurityUser lastModified(String lastModified) {
+        this.setLastModified(lastModified);
+        return this;
+    }
+
+    public void setLastModified(String lastModified) {
+        this.lastModified = lastModified;
+    }
+
+    public String getLastModifiedBy() {
+        return this.lastModifiedBy;
+    }
+
+    public SecurityUser lastModifiedBy(String lastModifiedBy) {
+        this.setLastModifiedBy(lastModifiedBy);
+        return this;
+    }
+
+    public void setLastModifiedBy(String lastModifiedBy) {
+        this.lastModifiedBy = lastModifiedBy;
     }
 
     public Organization getOrganization() {
@@ -469,7 +506,7 @@ public class SecurityUser implements Serializable {
             ", description='" + getDescription() + "'" +
             ", department='" + getDepartment() + "'" +
             ", imageUrl='" + getImageUrl() + "'" +
-            ", activated='" + getActivated() + "'" +
+            ", activated='" + isActivated() + "'" +
             ", langKey='" + getLangKey() + "'" +
             ", activationKey='" + getActivationKey() + "'" +
             ", resetKey='" + getResetKey() + "'" +
@@ -477,6 +514,16 @@ public class SecurityUser implements Serializable {
             ", mobileNo='" + getMobileNo() + "'" +
             ", createdBy='" + getCreatedBy() + "'" +
             ", createdOn='" + getCreatedOn() + "'" +
+            ", lastModified='" + getLastModified() + "'" +
+            ", lastModifiedBy='" + getLastModifiedBy() + "'" +
             "}";
+    }
+
+    public List<UserAccess> getUserAccess() {
+        return userAccess;
+    }
+
+    public void setUserAccess(List<UserAccess> userAccess) {
+        this.userAccess = userAccess;
     }
 }

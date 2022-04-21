@@ -7,7 +7,7 @@ import com.techvg.eoffice.IntegrationTest;
 import com.techvg.eoffice.config.Constants;
 import com.techvg.eoffice.domain.User;
 import com.techvg.eoffice.repository.UserRepository;
-import com.techvg.eoffice.service.dto.AdminUserDTO;
+import com.techvg.eoffice.service.dto.LoginUserDTO;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
